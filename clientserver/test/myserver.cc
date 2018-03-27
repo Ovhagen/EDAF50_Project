@@ -56,16 +56,18 @@ int main(int argc, char* argv[]){
 		auto conn = server.waitForActivity();
 		if (conn != nullptr) {
 			try {
-				int nbr = readNumber(conn);
-				string result;
-				if (nbr > 0) {
-					result = "positive";
-				} else if (nbr == 0) {
-					result = "zero";
-				} else {
-					result = "negative";
-				}
-				writeString(conn, result);
+				// int nbr = readNumber(conn);
+				unsigned char result = conn->read();
+				// if (nbr > 0) {
+				// 	result = "positive";
+				// } else if (nbr == 0) {
+				// 	result = "zero";
+				// } else {
+				// 	result = "negative";
+				// }
+
+				conn->write(result);
+				// writeString(conn, result);
 			} catch (ConnectionClosedException&) {
 				server.deregisterConnection(conn);
 				cout << "Client closed connection" << endl;
