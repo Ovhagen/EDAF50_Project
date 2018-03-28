@@ -7,27 +7,27 @@
 #include <vector>
 #include "newsgroup.h"
 
-class dbinterface{
+class dbinterface {
 public:
   virtual ~dbinterface() {}
-  virtual std::pair<int, std::map<int, Newsgroup>> listNewsGroup() = 0;
-  virtual int createNewsGroup() = 0;
-  virtual int deleteNewsGroup() = 0;
+  virtual std::map<int, Newsgroup> listNewsGroups() const = 0;
+  virtual int createNewsGroup(std::string& title) = 0;
+  virtual int deleteNewsGroup(int newsGroupId) = 0;
 
   /*Returns empty map if non-existing newsgroup
   * Check is done on the server
   */
-  virtual std::pair<int, std::map<int, Articels>> listArticels(int newsGroupId) = 0;
-  virtual int createArticel(int newsGroupId,
+  virtual std::pair<int, std::map<int, Article>> listArticles(int newsGroupId) = 0;
+  virtual int createArticle(int newsGroupId,
                                 std::string title,
                                 std::string author,
                                 std::string text) = 0;
 
   /*Returns actual error code for nack case.*/
-  virtual int deleteArticel(int newsGroupId, int articelId) = 0;
+  virtual int deleteArticle(int newsGroupId, int articleId) = 0;
 
   /*Returns actual error code for nack case.*/
-  virtual std::pair<int, std::vector<std::string>> getNewsArticel() = 0;
+  virtual std::pair<int, std::vector<std::string>> getNewsArticle(int newsGroupId, int articleId) = 0;
 
 private:
 

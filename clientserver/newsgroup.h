@@ -3,27 +3,31 @@
 
 #include <string>
 #include <map>
-#include "articel.h"
+#include "article.h"
+#include "dbinmemory.h"
 
-class Newsgroup{
+class Newsgroup {
 
 public:
-  Newsgroup(std::string name, int identification, int nbrArticles):
-  groupName(name), id(identification), nbrOfArticels(nbrArticles){}
+  Newsgroup(std::string name, int identification):
+  groupName(name), id(identification), nbrOfArticles(0){}
   ~Newsgroup() = default;
 
-  void addArticel(  std::string titel, std::string author, std::string text);
-  bool deleteArticel(int idNbr);
+  void addArticle(  std::string titel, std::string author, std::string text);
+  bool deleteArticle(int idNbr);
 
-  Articel& getArticel(int idNbr) const;
+  std::map<int, Article>::const_iterator& getArticle(int idNbr) const;
+
   int getGroupId() const;
   std::string getGroupName() const;
 
 private:
+  friend class dbinmemory;
+
   std::string groupName;
   int id;
-  int nbrOfArticels;
-  std::map<int, Articel> articles;
+  int nbrOfArticles;
+  std::map<int, Article> articles;
 };
 
 

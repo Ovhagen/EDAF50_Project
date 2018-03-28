@@ -1,26 +1,27 @@
 #include <string>
 #include <iostream>
-#include "newsgroups.h"
+#include "newsgroup.h"
+#include "article.h"
 
 /*Implementation of Newsgroups*/
 
-/*Actions on articel map*/
+/*Actions on article map*/
 void
-Newsgroup::addArticel(std::string titel, std::string author, std::string text){
-  Articel newArticel(titel, nbrOfArticels, author, text);
-  articels[nbrOfArticels] = newArticel;
-  ++nbrOfArticels;
+Newsgroup::addArticle(std::string titel, std::string author, std::string text){
+  Article newArticle(titel, nbrOfArticles, author, text);
+  articles[nbrOfArticles] = newArticle;
+  ++nbrOfArticles;
 }
 
 bool
-Newsgroup::deleteArticel(int idNbr){
-  return articels.erase(idNbr) == 1 ? true : false;
+Newsgroup::deleteArticle(int idNbr){
+  return articles.erase(idNbr) == 1 ? true : false;
 }
 
 /*Get operations*/
-Articel&
-Newsgroup::getArticel(int idNbr) const{
-  return articles[idNbr];                 //Handle non-existing case?
+map<int, Article>::const_iterator&
+Newsgroup::getArticle(int idNbr) const{
+  return articles.find(idNbr);        //Handle non-existing case?
 }
 
 int

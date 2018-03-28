@@ -11,11 +11,11 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $*.d
 # if you use clang++ and wish to use libc++ instead of GNU's libstdc++.
 # -g is for debugging.
 CPPFLAGS =  -std=c++11 -I.
-CXXFLAGS =  -O2 -Wall -Wextra -pedantic-errors -Wold-style-cast 
-CXXFLAGS += -std=c++11 
+CXXFLAGS =  -O2 -Wall -Wextra -pedantic-errors -Wold-style-cast
+CXXFLAGS += -std=c++11
 CXXFLAGS += -g
 CXXFLAGS += $(DEPFLAGS)
-LDFLAGS =   -g 
+LDFLAGS =   -g
 #CPPFLAGS += -stdlib=libc++
 #CXXFLAGS += -stdlib=libc++
 #LDFLAGS +=  -stdlib=libc++
@@ -27,7 +27,7 @@ all: libclientserver.a
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
 
-libclientserver.a: connection.o server.o
+libclientserver.a: connection.o server.o dbinmemory.o newsgroup.o
 	ar rv libclientserver.a  connection.o server.o
 	ranlib libclientserver.a
 
@@ -36,7 +36,7 @@ libclientserver.a: connection.o server.o
 
 # Standard clean
 clean:
-	rm -f *.o 
+	rm -f *.o
 
 distclean: clean
 	-rm *.d libclientserver.a
