@@ -11,8 +11,8 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $*.d
 # if you use clang++ and wish to use libc++ instead of GNU's libstdc++.
 # -g is for debugging.
 CPPFLAGS  = -std=c++11 -I..
-CXXFLAGS =  -O2 -Wall -Wextra -pedantic-errors -Wold-style-cast 
-CXXFLAGS += -std=c++11 
+CXXFLAGS =  -O2 -Wall -Wextra -pedantic-errors -Wold-style-cast
+CXXFLAGS += -std=c++11
 CXXFLAGS += -g
 CXXFLAGS += $(DEPFLAGS)
 LDFLAGS   = -g -L..
@@ -30,7 +30,7 @@ all: $(PROGS)
 
 # Targets rely on implicit rules for compiling and linking
 # The dependency on libclientserver.a is not defined.
-myserver: myserver.o  
+myserver: myserver.o
 myclient: myclient.o
 
 # Phony targets

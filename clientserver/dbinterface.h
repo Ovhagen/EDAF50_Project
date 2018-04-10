@@ -6,12 +6,14 @@
 #include <string>
 #include <vector>
 #include "newsgroup.h"
+#include "article.h"
 
+class Newsgroup;
 class dbinterface {
 public:
   virtual ~dbinterface() {}
   virtual std::map<int, Newsgroup> listNewsGroups() const = 0;
-  virtual int createNewsGroup(std::string& title) = 0;
+  virtual int createNewsGroup(const std::string& title) = 0;
   virtual int deleteNewsGroup(int newsGroupId) = 0;
 
   /*Returns empty map if non-existing newsgroup

@@ -9,14 +9,14 @@
 class Newsgroup {
 
 public:
-  Newsgroup(std::string name, int identification):
+  Newsgroup(std::string name = "", int identification = 0):
   groupName(name), id(identification), nbrOfArticles(0){}
   ~Newsgroup() = default;
 
-  void addArticle(  std::string titel, std::string author, std::string text);
+  void addArticle( std::string titel, std::string author, std::string text);
   bool deleteArticle(int idNbr);
 
-  std::map<int, Article>::const_iterator& getArticle(int idNbr) const;
+  std::map<int, Article>::const_iterator getArticle(int idNbr) const;
 
   int getGroupId() const;
   std::string getGroupName() const;

@@ -9,8 +9,7 @@
 void
 Newsgroup::addArticle(std::string titel, std::string author, std::string text){
   Article newArticle(titel, nbrOfArticles, author, text);
-  articles[nbrOfArticles] = newArticle;
-  ++nbrOfArticles;
+  articles[++nbrOfArticles] = newArticle; //Increment for new ids
 }
 
 bool
@@ -19,7 +18,7 @@ Newsgroup::deleteArticle(int idNbr){
 }
 
 /*Get operations*/
-map<int, Article>::const_iterator&
+std::map<int, Article>::const_iterator
 Newsgroup::getArticle(int idNbr) const{
   return articles.find(idNbr);        //Handle non-existing case?
 }

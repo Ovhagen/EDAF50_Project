@@ -3,20 +3,32 @@
 #include "newsgroup.h"
 #include "article.h"
 
+#include <iostream>
 #include <algorithm>
+
+#if 0
+#define trace cout
+#else
+#define trace if(false) cout
+#endif
 
 using namespace std;
 
-std::map<int, Newsgroup> dbinmemory::listNewsGroups() const {
+std::map<int, Newsgroup>
+dbinmemory::listNewsGroups() const {
+  trace << "dbinmemory::listNewsGroups" << endl;
   return db;
 }
 
-int dbinmemory::createNewsGroup(std::string& title) {
+
+int
+dbinmemory::createNewsGroup(const std::string& title) {
+  trace << "dbinmemory::createNewsGroup" << endl;
   auto it = find_if(db.begin(), db.end(), [&](const pair<int, Newsgroup>& temp){
     return temp.second.getGroupName() == title;
   });
 
-  if (it == db.end()) {
+  if (it != db.end()) {
     return static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS);
   }
 
@@ -24,15 +36,11 @@ int dbinmemory::createNewsGroup(std::string& title) {
   db.insert(make_pair(newsGroupCounter, ng));
   return static_cast<int>(Protocol::ANS_ACK);
 }
-int dbinmemory::deleteNewsGroup(int newsGroupId) {
-/*  auto it = find_if(ng.begin(), ng.end(), [&](const pair<int, Newsgroup>& temp){
-    return temp->first == newsGroupId;
-  })
 
-  if ( it == ng.end()) {
-    return Protocol.ERR_NG_DOES_NOT_EXIST;
-  }*/
 
+int
+dbinmemory::deleteNewsGroup(int newsGroupId) {
+  trace << "dbinmemory::deleteNewsGroup" << endl;
   int removed = db.erase(newsGroupId);
   if (removed == 1) {
     return static_cast<int>(Protocol::ANS_ACK);
@@ -41,7 +49,10 @@ int dbinmemory::deleteNewsGroup(int newsGroupId) {
   }
 }
 
- std::pair<int, std::map<int, Article>> dbinmemory::listArticles(int newsGroupId) {
+
+std::pair<int, std::map<int, Article>>
+dbinmemory::listArticles(int newsGroupId) {
+  trace << "dbinmemory::listArticles" << endl;
    auto it = db.find(newsGroupId);
 
    if (it == db.end()) {
@@ -52,7 +63,10 @@ int dbinmemory::deleteNewsGroup(int newsGroupId) {
    return make_pair(static_cast<int>(Protocol::ANS_ACK), it->second.articles);
  }
 
-int dbinmemory::createArticle(int newsGroupId, std::string title, std::string author, std::string text) {
+
+int
+dbinmemory::createArticle(int newsGroupId, std::string title, std::string author, std::string text) {
+  trace << "dbinmemory::createArticle" << endl;
   auto it = db.find(newsGroupId);
 
   if (it == db.end()) {
@@ -63,7 +77,10 @@ int dbinmemory::createArticle(int newsGroupId, std::string title, std::string au
   return static_cast<int>(Protocol::ANS_ACK);
 }
 
-int dbinmemory::deleteArticle(int newsGroupId, int articleId) {
+
+int
+dbinmemory::deleteArticle(int newsGroupId, int articleId) {
+  trace << "dbinmemory::deleteArticle" << endl;
   auto it = db.find(newsGroupId);
 
   if (it == db.end()) {
@@ -79,7 +96,10 @@ int dbinmemory::deleteArticle(int newsGroupId, int articleId) {
   }
 }
 
-std::pair<int, std::vector<std::string>> dbinmemory::getNewsArticle(int newsGroupId, int articleId) {
+
+std::pair<int, std::vector<std::string>>
+dbinmemory::getNewsArticle(int newsGroupId, int articleId) {
+  trace << "dbinmemory::getNewsArticle" << endl;
   auto it = db.find(newsGroupId);
   std::vector<string> articleItems;
   if (it == db.end()) {

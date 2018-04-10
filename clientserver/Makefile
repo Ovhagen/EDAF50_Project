@@ -22,7 +22,7 @@ LDFLAGS =   -g
 
 # Targets
 
-all: libclientserver.a
+all: libclientserver.a test_in
 
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
@@ -30,6 +30,7 @@ all: libclientserver.a
 libclientserver.a: connection.o server.o dbinmemory.o newsgroup.o
 	ar rv libclientserver.a  connection.o server.o
 	ranlib libclientserver.a
+test_in: dbinmemory.o newsgroup.o
 
 # Phony targets
 .PHONY: all clean distclean
