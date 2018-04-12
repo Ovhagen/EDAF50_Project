@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 		cerr << "Usage: myclient host-name port-number" << endl;
 		exit(1);
 	}
-
+	
 	int port = -1;
 	try {
 		port = stoi(argv[2]);
@@ -44,13 +44,13 @@ int main(int argc, char* argv[]) {
 		cerr << "Wrong port number. " << e.what() << endl;
 		exit(1);
 	}
-
+	
 	Connection conn(argv[1], port);
 	if (!conn.isConnected()) {
 		cerr << "Connection attempt failed" << endl;
 		exit(1);
 	}
-
+	
 	cout << "Type a number: ";
 	int nbr;
 	while (cin >> nbr) {
@@ -66,3 +66,4 @@ int main(int argc, char* argv[]) {
 		}
 	}
 }
+

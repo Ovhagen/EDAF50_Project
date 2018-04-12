@@ -3,7 +3,6 @@
 
 #include <string>
 #include <map>
-#include "newsgroup.h"
 #include "dbinterface.h"
 #include "article.h"
 
@@ -11,7 +10,7 @@ class Newsgroup;
 class dbinmemory : public dbinterface {
 
 public:
-  dbinmemory() : newsGroupCounter(0) {}   //Implement as singleton
+  dbinmemory() : newsGroupCounter(0) {};   //Implement as singleton
   virtual std::map<int, Newsgroup> listNewsGroups() const;
   virtual int createNewsGroup(const std::string& title);
   virtual int deleteNewsGroup(int newsGroupId);

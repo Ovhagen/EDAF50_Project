@@ -24,7 +24,7 @@ LDFLAGS   = -g -L..
 LDLIBS = -lclientserver
 
 # Targets
-PROGS = myserver myclient
+PROGS = myserver myclient news_server
 
 all: $(PROGS)
 
@@ -32,6 +32,7 @@ all: $(PROGS)
 # The dependency on libclientserver.a is not defined.
 myserver: myserver.o
 myclient: myclient.o
+news_server: news_server.o
 
 # Phony targets
 .PHONY: all clean distclean
