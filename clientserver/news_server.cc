@@ -5,7 +5,7 @@
 #include "protocol.h"
 #include "messagehandler.h"
 #include "dbinmemory.h"
-
+#include "dbondisk.h"
 
 #include <memory>
 #include <iostream>
@@ -122,6 +122,7 @@ int main(int argc, char* argv[]){
 								throw ConnectionClosedException();
 							}
 							int code = db.deleteNewsGroup(id);
+							mh.sendByte(static_cast<int>(Protocol::ANS_DELETE_NG));
 							if (code == static_cast<int>(Protocol::ANS_ACK)) {
 								mh.sendByte(code);
 							} else {
@@ -131,10 +132,100 @@ int main(int argc, char* argv[]){
 							mh.sendByte(static_cast<int>(Protocol::ANS_END));
 							break;
 						}
-					default:
+				case static_cast<int>(Protocol::COM_LIST_ART): {
+						int group_id = mh.recvIntParameter();
+						unsigned char com_end = mh.recvByte();
+						if (com_end != static_cast<int>(Protocol::COM_END)) {
+							throw ConnectionClosedException();
+						}
+						pair<int, map<int, Article>> articles = db.listArticles(group_id);
+						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_ART));
+						if (articles.first == static_cast<int>(Protocol::ANS_ACK)) {
+							cout << "success" << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_ACK));
+							mh.sendIntParameter(articles.second.size());
+							for (auto it = articles.second.begin(); it != articles.second.end(); ++it) {
+								mh.sendIntParameter(it->first);
+								mh.sendStringParameter(it->second.getArticleTitle());
+							}
+						} else {
+							cout << "couldnt get article, ng or art does not exist" << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+							mh.sendByte(articles.first);
+						}
+						mh.sendByte(static_cast<int>(Protocol::ANS_END));
+						break;
+					}
+				case static_cast<int>(Protocol::COM_CREATE_ART): {
+							int group_id = mh.recvIntParameter();
+							string article_title = mh.recvStringParameter();
+							string article_author = mh.recvStringParameter();
+							string article_text = mh.recvStringParameter();
+							unsigned char com_end = mh.recvByte();
+							if (com_end != static_cast<int>(Protocol::COM_END)) {
+								throw ConnectionClosedException();
+							}
+							int code = db.createArticle(group_id, article_title, article_author, article_text);
+							mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_ART));
+							if (code == static_cast<int>(Protocol::ANS_ACK)) {
+								cout << "success" << endl;
+								mh.sendByte(code);
+							} else {
+								cout << "failed to create article, newsgroup does not exist" << endl;
+								mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+								mh.sendByte(code);
+							}
+							mh.sendByte(static_cast<int>(Protocol::ANS_END));
+							break;
+					}
+				case static_cast<int>(Protocol::COM_DELETE_ART): {
+						int group_id = mh.recvIntParameter();
+						int article_id = mh.recvIntParameter();
+						unsigned char com_end = mh.recvByte();
+						if (com_end != static_cast<int>(Protocol::COM_END)) {
+							throw ConnectionClosedException();
+						}
+						int code = db.deleteArticle(group_id, article_id);
+						mh.sendByte(static_cast<int>(Protocol::ANS_DELETE_ART));
+						if (code == static_cast<int>(Protocol::ANS_ACK)) {
+							cout << "success" << endl;
+							mh.sendByte(code);
+						} else {
+							cout << "failed to create article, newsgroup does not exist" << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+							mh.sendByte(code);
+						}
+						mh.sendByte(static_cast<int>(Protocol::ANS_END));
+						break;
+					}
+				case static_cast<int>(Protocol::COM_GET_ART): {
+						int group_id = mh.recvIntParameter();
+						int article_id = mh.recvIntParameter();
+						unsigned char com_end = mh.recvByte();
+						if (com_end != static_cast<int>(Protocol::COM_END)) {
+							throw ConnectionClosedException();
+						}
+						pair<int, vector<string>> article = db.getNewsArticle(group_id, article_id);
+						mh.sendByte(static_cast<int>(Protocol::ANS_GET_ART));
+						if (article.first == static_cast<int>(Protocol::ANS_ACK)) {
+							cout << "success" << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_ACK));
+							for (auto it = article.second.begin(); it != article.second.end(); ++it) {
+								mh.sendStringParameter(*it);
+							}
+						} else {
+							cout << "couldnt get article, ng or art does not exist" << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+							mh.sendByte(article.first);
+						}
+						mh.sendByte(static_cast<int>(Protocol::ANS_END));
+						break;
+					}
+
+				default:
 							throw ConnectionClosedException();
 							break;
-				}
+					}
 				}
 				//conn->write(result);
 				// writeString(conn, result);
