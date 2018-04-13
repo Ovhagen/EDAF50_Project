@@ -5,17 +5,15 @@
 #include "messagehandler.h"
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <stdexcept>
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <sstream>
 
 using namespace std;
-
-enum commands {
-
-};
 
 /*
  * Send an integer to the server as four bytes.
@@ -56,6 +54,27 @@ void printCommands() {
 	cout << "============================================================================"<< endl;
 }
 
+/*Read the available parameters from the input.*/
+vector<string> readCommandParameters(istringstream& ss, int nbrOfParam){
+	std::vector<string> parameters;
+	for(int i = 0; i < nbrOfParam; i++){
+		string p;
+		ss >> p;
+		parameters.push_back(p);
+	}
+	return parameters;
+}
+
+bool checkCode(int code, int protoCode){
+	if(code == protoCode){
+		return true;
+	}
+	else{
+		throw std::bad_exception();
+	}
+
+}
+
 int main(int argc, char* argv[]) {
 	if (argc != 3) {
 		cerr << "Usage: news_client host-name port-number" << endl;
@@ -70,29 +89,115 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	Connection conn(argv[1], port);
-	if (!conn.isConnected()) {
+	std::shared_ptr<Connection> conn = std::make_shared<Connection>(argv[1], port);
+	if (!conn->isConnected()) {
 		cerr << "Connection attempt failed" << endl;
 		exit(1);
 	}
 
 	cout << "Type a command. Use command \'help\' for listing of commands." << endl;
-	string cmd;
-	while (cin >> cmd) {
+	string line;
+	MessageHandler mh(conn);
+	while (getline(cin, line)) {
+		istringstream ss(line);
 		try {
-				// cout << nbr << " is ...";
-				// writeNumber(conn, nbr);
-				// string reply = readString(conn);
-				// cout << " " << reply << endl;
-				// cout << "Type another number: ";
-					if(cmd == "help"){
-						printCommands();
-					}else{
-						cout << "Unrecognized command, please try again." << endl;
-					}
-				} catch (ConnectionClosedException&) {
-						cout << " no reply from server. Exiting." << endl;
-						exit(1);
+				string command;
+				string option;
+				vector<string> parameters;
+				ss >> command;
+				ss >> option;
+				cout << "Command: " << command << endl;
+				cout << "Option: " << option << endl;
+
+				if(command == "help"){
+					printCommands();
 				}
+
+				else if(command == "list"){
+					if(option == "-ng"){
+						/*List the news groups*/
+					}
+					else if(option == "-art"){
+						/*List the articles in a news group*/
+						 parameters = readCommandParameters(ss, 1);
+						 int groupId = stoi(parameters[0]);
+						 cout << "Groupid: " << groupId << endl;
+					}
+					else{
+						cout << "Recognized command but no option was specified." << endl;
+					}
+				}
+
+				else if(command == "create"){
+					if(option == "-ng"){
+						/*Create a news groups*/
+						parameters = readCommandParameters(ss, 1);
+						string groupName = parameters[0];
+						mh.sendCode(static_cast<int>(Protocol::COM_CREATE_NG));
+						mh.sendStringParameter(groupName);
+						mh.sendCode(static_cast<int>(Protocol::COM_END));
+
+						/*Start receiving of command*/
+						int ansCode = mh.recvCode();
+						checkCode(ansCode, static_cast<int>(Protocol::ANS_END));
+
+						int response = mh.recvCode();
+						if(checkCode(response, static_cast<int>(Protocol::ANS_ACK))){
+							cout << "Successfully created the group \'" << groupName << "\'" << endl;
+						} else if(checkCode(response, static_cast<int>(Protocol::ANS_NAK))){
+							int errorCode = mh.recvCode();
+							if(checkCode(errorCode, static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS))){
+								cout << "Request failed. A group with the name \'" << groupName << "\' already exists." << endl;
+							}
+						}
+
+						int endCode = mh.recvCode();
+						checkCode(endCode, static_cast<int>(Protocol::ANS_END));
+					}
+					else if(option == "-art"){
+						/*Create an article*/
+						parameters = readCommandParameters(ss, 1);
+						int groupId = stoi(parameters[0]);
+						cout << groupId << endl;
+					}
+					else{
+						cout << "Recognized command but no option was specified." << endl;
+					}
+				}
+
+
+				else if(command == "delete"){
+					if(option == "-ng"){
+						/*Delete a news groups*/
+					}
+					else if(option == "-art"){
+						/*Delete an article*/
+						parameters = readCommandParameters(ss, 1);
+						int groupId = stoi(parameters[0]);
+						cout << groupId << endl;
+					}
+					else{
+						cout << "Recognized command but no option was specified." << endl;
+					}
+				}
+				else{
+					cout << "Unrecognized command, please try again." << endl;
+				}
+
+
+			}
+
+			catch(const std::bad_exception& ba){
+				cerr << "Protocol failure in " << ba.what()<< ". Incorrect sequence received." << endl;
+			}
+
+			catch(std::invalid_argument&){
+					cerr << "Invalid parameter given. Please try again." << endl;
+			}
+
+			catch (ConnectionClosedException&) {
+					cout << " no reply from server. Exiting." << endl;
+					exit(1);
+			}
 	}
 }
