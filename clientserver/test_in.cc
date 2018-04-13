@@ -25,7 +25,7 @@ void test(dbinmemory& dbin) {
 	assert(dbin.createNewsGroup("Sports") == static_cast<int>(Protocol::ANS_ACK));
   assert(dbin.createNewsGroup("Fishing") == static_cast<int>(Protocol::ANS_ACK));
   assert(dbin.createNewsGroup("Movies") == static_cast<int>(Protocol::ANS_ACK));
-  std::map<int, Newsgroup> result = dbin.listNewsGroups();
+  std::vector<pair<int, Newsgroup>> result = dbin.listNewsGroups();
 	assert(result[1].getGroupName() == "Sports"); //id starts at 1
   assert(result[2].getGroupName() == "Fishing");
   assert(result[3].getGroupName() == "Movies");

@@ -25,6 +25,10 @@ void MessageHandler::sendCode(int code) {
 }
 
 void MessageHandler::sendInt(int value) {
+  // std::cout << ((value >> 24) & 0xFF) << std::endl;
+  // std::cout << ((value >> 16) & 0xFF) << std::endl;
+  // std::cout << ((value >> 8) & 0xFF) << std::endl;
+  // std::cout << (value & 0xFF) << std::endl;
   sendByte((value >> 24) & 0xFF);
   sendByte((value >> 16) & 0xFF);
   sendByte((value >> 8) & 0xFF);

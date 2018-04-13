@@ -14,10 +14,14 @@
 
 using namespace std;
 
-std::map<int, Newsgroup>
+std::vector<pair<int, Newsgroup>>
 dbinmemory::listNewsGroups() const {
   trace << "dbinmemory::listNewsGroups" << endl;
-  return db;
+  std::vector<pair<int, Newsgroup>> newsgroups;
+  for (auto it = db.begin(); it != db.end(); ++it) {
+    newsgroups.push_back(make_pair(it->first, it->second));
+  }
+  return newsgroups;
 }
 
 

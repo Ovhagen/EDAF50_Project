@@ -64,27 +64,81 @@ int main(int argc, char* argv[]){
     MessageHandler mh(conn);
 		if (conn != nullptr) {
 			try {
-        unsigned char result = mh.recvByte();
-				cout << "got byte: " << result << endl;
-        if(result == static_cast<int>(Protocol::COM_CREATE_NG)) {
-          string groupname = mh.recvStringParameter();
-          unsigned char com_end = mh.recvByte();
-          if (com_end != static_cast<int>(Protocol::COM_END)) {
-            cerr << "expected com_end, something wrong" << endl;
-          }
-          int code = db.createNewsGroup(groupname);
-          mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_NG));
-          if (code == static_cast<int>(Protocol::ANS_ACK)) {
-            mh.sendByte(code);
-          } else {
-            mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
-            mh.sendByte(code);
-          }
-          mh.sendByte(static_cast<int>(Protocol::ANS_END));
-        }
+        unsigned int cmd = mh.recvByte();
+				cout << "got command: " << cmd << endl;
+				switch (cmd) {
+					case static_cast<int>(Protocol::COM_LIST_NG): {
+						cout << "in list_ng" << endl;
+						unsigned char com_end = mh.recvByte();
+						cout << "com_end: " << com_end << endl;
+						if (com_end != static_cast<int>(Protocol::COM_END)) {
+							cout << "fatal error" << endl;
+							throw ConnectionClosedException();
+						}
+						cout << "received com_end" << endl;
+						vector<pair<int, Newsgroup>> newsgroups = db.listNewsGroups();
+						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_NG));
+						mh.sendIntParameter(static_cast<int>(newsgroups.size()));
+						cout << "amount of newsgroups: " << newsgroups.size() << endl;
+						for (auto it = newsgroups.begin(); it != newsgroups.end(); ++it) {
+							mh.sendIntParameter(it->first);
+							mh.sendStringParameter(it->second.getGroupName());
+							cout << "group id: " << it->first << endl;
+							cout << "groupname: " << it->second.getGroupName() << endl;
+						}
+						mh.sendByte(static_cast<int>(Protocol::ANS_END));
+						cout << "ans_end sent" << endl;
+						break;
+					}
+					case static_cast<int>(Protocol::COM_CREATE_NG): {
+							cout << "in create_ng" << endl;
+							string groupname = mh.recvStringParameter();
+							cout << groupname << endl;
+							unsigned char com_end = mh.recvByte();
+							if (com_end != static_cast<int>(Protocol::COM_END)) {
+								throw ConnectionClosedException();
+							}
+							cout << "received com_end" << endl;
+							unsigned int code = db.createNewsGroup(groupname);
+							cout << code << endl;
+							mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_NG));
+							if (code == static_cast<int>(Protocol::ANS_ACK)) {
+								cout << "success" << endl;
+								mh.sendByte(code);
+							} else {
+								cout << "failed to create newsgroup" << endl;
+								mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+								mh.sendByte(code);
+							}
+
+							mh.sendByte(static_cast<int>(Protocol::ANS_END));
+							cout << "ans_end sent" << endl;
+							break;
+						}
+					case static_cast<int>(Protocol::COM_DELETE_NG): {
+							int id = mh.recvIntParameter();
+							unsigned char com_end = mh.recvByte();
+							if (com_end != static_cast<int>(Protocol::COM_END)) {
+								throw ConnectionClosedException();
+							}
+							int code = db.deleteNewsGroup(id);
+							if (code == static_cast<int>(Protocol::ANS_ACK)) {
+								mh.sendByte(code);
+							} else {
+								mh.sendByte(static_cast<int>(Protocol::ANS_NAK));
+								mh.sendByte(code);
+							}
+							mh.sendByte(static_cast<int>(Protocol::ANS_END));
+							break;
+						}
+					default:
+							throw ConnectionClosedException();
+							break;
+				}
+				}
 				//conn->write(result);
 				// writeString(conn, result);
-			} catch (ConnectionClosedException&) {
+		 	catch (ConnectionClosedException&) {
 				server.deregisterConnection(conn);
 				cout << "Client closed connection" << endl;
 			}

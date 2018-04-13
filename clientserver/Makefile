@@ -22,7 +22,7 @@ LDFLAGS =   -g
 
 # Targets
 
-all: libclientserver.a test_in news_server
+all: libclientserver.a news_server
 
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
