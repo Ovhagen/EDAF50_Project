@@ -1,12 +1,12 @@
-dbinmemory.o: dbinmemory.cc dbinmemory.h dbinterface.h newsgroup.h \
- article.h protocol.h
+dbinmemory.o: dbinmemory.cc dbinmemory.h dbinterface.h article.h \
+ protocol.h newsgroup.h
 
 dbinmemory.h:
 
 dbinterface.h:
 
-newsgroup.h:
-
 article.h:
 
 protocol.h:
+
+newsgroup.h:

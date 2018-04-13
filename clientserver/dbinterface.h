@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "newsgroup.h"
 #include "article.h"
 
 class Newsgroup;

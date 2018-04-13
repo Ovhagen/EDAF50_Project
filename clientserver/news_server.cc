@@ -6,6 +6,7 @@
 #include "messagehandler.h"
 #include "dbinmemory.h"
 #include "dbondisk.h"
+#include "newsgroup.h"
 
 #include <memory>
 #include <iostream>
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]){
 		exit(1);
 	}
 
-   dbinmemory db;
+   dbondisk db;
 
 	while (true) {
 		auto conn = server.waitForActivity();

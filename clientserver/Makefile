@@ -27,11 +27,12 @@ all: libclientserver.a news_server news_client
 # Create the library; ranlib is for Darwin (OS X) and maybe other systems.
 # Doesn't seem to do any damage on other systems.
 
-libclientserver.a: connection.o server.o dbinmemory.o newsgroup.o messagehandler.o news_server.o
+libclientserver.a: connection.o server.o dbondisk.o dbinmemory.o newsgroup.o messagehandler.o news_server.o
 	ar rv libclientserver.a  connection.o server.o
 	ranlib libclientserver.a
-test_in: dbinmemory.o newsgroup.o
-news_server: news_server.o dbinmemory.o newsgroup.o messagehandler.o server.o connection.o
+#test_in: dbinmemory.o newsgroup.o
+news_server: news_server.o dbinmemory.o dbondisk.o newsgroup.o messagehandler.o server.o connection.o
+
 news_client: news_client.o newsgroup.o messagehandler.o connection.o
 
 # Phony targets

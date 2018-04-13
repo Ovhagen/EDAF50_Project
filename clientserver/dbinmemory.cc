@@ -1,7 +1,6 @@
 #include "dbinmemory.h"
 #include "protocol.h"
 #include "newsgroup.h"
-#include "article.h"
 
 #include <iostream>
 #include <algorithm>
