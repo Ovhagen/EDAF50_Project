@@ -46,10 +46,10 @@ void printCommands() {
 	cout << "The available options are \'-ng\' for Newsgroups and \'-art\' for article." << endl;
 	cout << "Below are the available commands for the client application." << endl;
 	cout << "-List of newsgroups: list -ng" << endl;
-	cout << "-Create a newsgroup: create -ng <newsgroup name>" << endl;
+	cout << "-Create a newsgroup: create -ng \"<newsgroup name>\"" << endl;
 	cout << "-Delete a newsgroup: delete -ng <group identification number>" << endl;
 	cout << "-List of articles in a newsgroup: list -art <group identification number>" << endl;
-  cout << "-Create an article: create -art <group identification number> <title> <author> <text>" << endl;
+  cout << "-Create an article: create -art <group identification number> \"<title>\" \"<author>\" \"<text>\"" << endl;
   cout << "-Delete an article: delete -art <group identification number> <article identification number>" << endl;
 	cout << "-Get an article: get -art <group identification number> <article identification number>" << endl;
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
@@ -80,8 +80,19 @@ vector<string> readCommandParameters(istringstream& ss, int nbrOfParam){
 		if (p == ""){
 			throw std::invalid_argument("Invalid parameter given. Please try again.");
 		}
+
+		else if(p.at(0) == '\"'){
+			do{
+				string newArgument;
+				ss >> newArgument;
+				p += " " + newArgument;
+				cout << p << endl;
+			}while(p.at(p.size()-1) != '\"');
+			p.erase(std::remove(p.begin(), p.end(), '\"'), p.end());
+		}
 		parameters.push_back(p);
 	}
+
 	if(parameters.size() != nbrOfParam){
 		throw std::invalid_argument("Invalid number of parameters given. Please try again.");
 	}
@@ -152,9 +163,9 @@ int main(int argc, char* argv[]) {
 					}
 					else if(option == "-art"){
 						/*Create an article*/
-						parameters = readCommandParameters(ss, 1);
-						int groupId = stoi(parameters[0]);
-						cout << groupId << endl;
+						parameters = readCommandParameters(ss, 4);
+						ch.createArticle(stoi(parameters[0]), parameters[1],
+														 parameters[2], parameters[3]);
 					}
 					else{
 						cout << "Recognized command but no option was specified." << endl;

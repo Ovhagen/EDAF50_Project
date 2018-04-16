@@ -31,11 +31,6 @@ CommandHandler::listNewsGroup(){
   return groupList;
 }
 
-vector<pair<int, string>>
-CommandHandler::listNewsArticles(int id){
-
-}
-
 void
 CommandHandler::createNewsGroup(std::string groupName){
   mh.sendCode(static_cast<int>(Protocol::COM_CREATE_NG));
@@ -86,6 +81,50 @@ CommandHandler::deleteNewsGroup(int id){
 
   int endCode = mh.recvCode();
   checkAnswerCode(endCode, static_cast<int>(Protocol::ANS_END));
+}
+
+vector<pair<int, string>>
+CommandHandler::listNewsArticles(int id){
+
+}
+
+void
+CommandHandler::createArticle(int id, string title, string author, string text){
+  mh.sendCode(static_cast<int>(Protocol::COM_CREATE_ART));
+  mh.sendIntParameter(id);
+  mh.sendStringParameter(title);
+  mh.sendStringParameter(author);
+  mh.sendStringParameter(text);
+  mh.sendCode(static_cast<int>(Protocol::COM_END));
+
+  /*Start receiving of command*/
+  int ansCode = mh.recvCode();
+  checkAnswerCode(ansCode, static_cast<int>(Protocol::ANS_CREATE_ART));
+
+  int response = mh.recvCode();
+  if(response == static_cast<int>(Protocol::ANS_ACK)){
+    cout << "Successfully created the article \'" << title << "\'" << endl;
+  } else if(response == static_cast<int>(Protocol::ANS_NAK)){
+    int errorCode = mh.recvCode();
+    if(errorCode == static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST)){
+      cout << "Request failed. A group with id \'" << id << "\' does not exist." << endl;
+    }
+  }else{
+    throw std::bad_exception();
+  }
+
+  int endCode = mh.recvCode();
+  checkAnswerCode(endCode, static_cast<int>(Protocol::ANS_END));
+}
+
+void
+CommandHandler::deleteArticle(int id, int artId){
+
+}
+
+vector<string>
+CommandHandler::getArticle(int id, int artId){
+
 }
 
 bool
