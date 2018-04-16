@@ -21,6 +21,7 @@ public:
                                 std::string text);
   virtual int deleteArticle(int newsGroupId, int articleId);
   virtual std::pair<int, std::vector<std::string>> getNewsArticle(int newsGroupId, int articleId);
+
 private:
   int newsGroupCounter;
 };

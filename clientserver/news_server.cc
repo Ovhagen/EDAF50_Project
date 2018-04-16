@@ -134,12 +134,15 @@ int main(int argc, char* argv[]){
 							break;
 						}
 				case static_cast<int>(Protocol::COM_LIST_ART): {
+						cout << "list art 1" << endl;
 						int group_id = mh.recvIntParameter();
 						unsigned char com_end = mh.recvByte();
 						if (com_end != static_cast<int>(Protocol::COM_END)) {
 							throw ConnectionClosedException();
 						}
+						cout << "list art 2" << endl;
 						pair<int, map<int, Article>> articles = db.listArticles(group_id);
+						cout << "list art 3" << endl;
 						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_ART));
 						if (articles.first == static_cast<int>(Protocol::ANS_ACK)) {
 							cout << "success" << endl;
