@@ -16,34 +16,13 @@
 
 using namespace std;
 
-/*
- * Send an integer to the server as four bytes.
- */
-void writeNumber(const Connection& conn, int value) {
-	conn.write((value >> 24) & 0xFF);
-	conn.write((value >> 16) & 0xFF);
-	conn.write((value >> 8)	 & 0xFF);
-	conn.write(value & 0xFF);
-}
-
-/*
- * Read a string from the server.
- */
-string readString(const Connection& conn) {
-	string s;
-	char ch;
-	while ((ch = conn.read()) != '$') {
-		s += ch;
-	}
-	return s;
-}
-
-
 /*Prints available commands*/
 void printCommands() {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-	cout << "The client program generally takes commands on the format \n<command> <option> <parameter1> <parameter2>... where either some or all parameters are required." << endl;
+	cout << "The client program generally takes commands on the format <command> <option> <parameter1> <parameter2>... \nwhere either some or all parameters are required." << endl;
+  cout << "Add double quotes \"Text goes here\" to input several words as one argument to a command." << endl;
 	cout << "The available options are \'-ng\' for Newsgroups and \'-art\' for article." << endl;
+	cout << endl;
 	cout << "Below are the available commands for the client application." << endl;
 	cout << "-List of newsgroups: list -ng" << endl;
 	cout << "-Create a newsgroup: create -ng \"<newsgroup name>\"" << endl;
@@ -55,20 +34,45 @@ void printCommands() {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
 }
 
-void printGroupList(vector<pair<int, string>> list){
+/*Prints a list of groups and articles for ListGroup and ListArticle command*/
+void printList(vector<pair<int, string>> list){
 	if(list.size() == 0){
 		cout << "No results found." << endl;
 
 	}else{
-		cout << "++++++++++++++++++++++++++++++++++++++++"<< endl;
-		cout << "+ ID   Name                            +" << endl;
-		cout << "+                                      +" << endl;
+		cout << "+++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+		cout << "+ ID   Name                                 +" << endl;
+		cout << "+                                           +" << endl;
 		for(const auto& p : list){
-			string spaces(33 - to_string(p.first).length() - p.second.length(), ' ');
+			string spaces(38 - to_string(p.first).length() - p.second.length(), ' ');
 			string tableBoundry = spaces + "+";
 			cout << "+ " << p.first << "    " << p.second << tableBoundry << endl;
 		}
-		cout << "++++++++++++++++++++++++++++++++++++++++"<< endl;
+		cout << "+++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+	}
+}
+
+void displayArticle(vector<string> article){
+	if(article.size() == 0){
+		cout << "No results found." << endl;
+	}else{
+		string title = article[0];
+		string author = article[1];
+		string text = article[2];
+		cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+		string titleSpaces((58-title.size())/2, ' ');
+		cout << "+" << titleSpaces << title << titleSpaces << " +" << endl;
+		string authorSpaces((47-author.size())/2, ' ');
+		cout << "+" << authorSpaces << "written by "  << author << authorSpaces << "  +" << endl;
+		cout << "+                                                           +" << endl;
+		//cout << text.size()%50 << endl;
+		for(int i = 0; i < text.size()%50; i++){
+			string subText = text.substr(i, i+(50-i));
+			string textSpaces((59-subText.size())/2, ' ');
+			cout << "+" << textSpaces << subText << textSpaces << " +" << endl;
+		}
+		cout << "+                                                           +" << endl;
+		cout <<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
 	}
 }
 
@@ -82,14 +86,15 @@ vector<string> readCommandParameters(istringstream& ss, int nbrOfParam){
 		}
 
 		else if(p.at(0) == '\"'){
-			do{
-				string newArgument;
-				ss >> newArgument;
-				p += " " + newArgument;
-				cout << p << endl;
-			}while(p.at(p.size()-1) != '\"');
+			if (p.at(p.size()-1) != '\"'){
+				do{
+					string newArgument;
+					ss >> newArgument;
+					p += " " + newArgument;
+				}while(p.at(p.size()-1) != '\"');
+			}
 			p.erase(std::remove(p.begin(), p.end(), '\"'), p.end());
-		}
+	}
 		parameters.push_back(p);
 	}
 
@@ -141,13 +146,14 @@ int main(int argc, char* argv[]) {
 					if(option == "-ng"){
 						/*List the news groups*/
 						auto groupList = ch.listNewsGroup();
-						printGroupList(groupList);
+						printList(groupList);
 					}
 					else if(option == "-art"){
 						/*List the articles in a news group*/
 						 parameters = readCommandParameters(ss, 1);
 						 int groupId = stoi(parameters[0]);
 						 auto articleList = ch.listNewsArticles(groupId);
+						 printList(articleList);
 					}
 					else{
 						cout << "Recognized command but no option was specified." << endl;
@@ -181,11 +187,20 @@ int main(int argc, char* argv[]) {
 					}
 					else if(option == "-art"){
 						/*Delete an article*/
-						parameters = readCommandParameters(ss, 1);
-						int groupId = stoi(parameters[0]);
+						parameters = readCommandParameters(ss, 2);
+						ch.deleteArticle(stoi(parameters[0]), stoi(parameters[1]));
+					}
+				}
+
+				else if(command == "get"){
+					if(option == "-art"){
+						/*Delete a news groups*/
+						parameters = readCommandParameters(ss, 2);
+						auto article = ch.getArticle(stoi(parameters[0]), stoi(parameters[1]));
+						displayArticle(article);
 					}
 					else{
-						cout << "Recognized command but no option was specified." << endl;
+							cout << "Recognized command but no option was specified." << endl;
 					}
 				}
 
