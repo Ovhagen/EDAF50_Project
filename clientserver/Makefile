@@ -33,7 +33,7 @@ libclientserver.a: connection.o server.o dbondisk.o dbinmemory.o newsgroup.o mes
 #test_in: dbinmemory.o newsgroup.o
 news_server: news_server.o dbinmemory.o dbondisk.o newsgroup.o messagehandler.o server.o connection.o
 
-news_client: news_client.o newsgroup.o messagehandler.o connection.o
+news_client: news_client.o newsgroup.o messagehandler.o connection.o commandhandler.o
 
 # Phony targets
 .PHONY: all clean distclean

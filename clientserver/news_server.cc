@@ -147,6 +147,7 @@ int main(int argc, char* argv[]){
 						if (articles.first == static_cast<int>(Protocol::ANS_ACK)) {
 							cout << "success" << endl;
 							mh.sendByte(static_cast<int>(Protocol::ANS_ACK));
+							cout << articles.second.size() << endl;
 							mh.sendIntParameter(articles.second.size());
 							for (auto it = articles.second.begin(); it != articles.second.end(); ++it) {
 								mh.sendIntParameter(it->first);

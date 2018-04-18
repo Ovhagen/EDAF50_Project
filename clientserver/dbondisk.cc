@@ -61,7 +61,10 @@ vector<std::pair<int, Newsgroup>> dbondisk::listNewsGroups() const {
       dir_nbr = stoi(dir_nbr_string);
       string newsgroup_title;
       iss >> newsgroup_title;
-      Newsgroup ng(newsgroup_title, dir_nbr);
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+      Newsgroup ng(full_name, dir_nbr);
       newsgroups.push_back(make_pair(dir_nbr, ng));
     }
   }
@@ -70,8 +73,8 @@ vector<std::pair<int, Newsgroup>> dbondisk::listNewsGroups() const {
 }
 
 int dbondisk::createNewsGroup(const std::string& title) {
-  ++newsGroupCounter;
   string path = "dbroot/" + to_string(newsGroupCounter) + " " + title;
+  ++newsGroupCounter;
   return (mkdir(path.c_str(), ACCESSPERMS) == 0) ? static_cast<int>(Protocol::ANS_ACK) : static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS);
 }
 
@@ -79,26 +82,54 @@ int dbondisk::deleteNewsGroup(int newsGroupId) {
   DIR *dp;
   struct dirent *dirp;
 
+  cout << "entered deleteNewsGroup" << endl;
   if((dp = opendir("dbroot")) == NULL) {
     cout << "Error("   << errno << ") opening " << dp << endl;
     return errno;
   }
   while ((dirp = readdir(dp)) != NULL) {
+    cout << "going through directory" << endl;
     string dir_name = string(dirp->d_name);
     istringstream iss(dir_name);
-    string dir_nbr_string;
+    //string dir_nbr_string;
     int dir_nbr;
-    iss >> dir_nbr_string;
-    dir_nbr = stoi(dir_nbr_string);
+    iss >> dir_nbr;
+    //dir_nbr = stoi(dir_nbr_string);
+    cout << dir_nbr << " == " << newsGroupId << endl;
     if (dir_nbr == newsGroupId) {
-      int removed = remove(dir_name.c_str());
-      if (removed == 0) {
-        return static_cast<int>(Protocol::ANS_ACK);
+      cout << "dir_nbr equal to newsGroupId" << endl;
+      string path = "dbroot/" + dir_name;
+      // delete all articles first
+      DIR *adp;
+      struct dirent *artDirp;
+      //string path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
+      if((adp = opendir(path.c_str())) == NULL) {
+
       }
+      while ((artDirp = readdir(adp)) != NULL) {
+        if ( !strcmp(artDirp->d_name, ".") || !strcmp(artDirp->d_name, "..")) {
+          // skip . and ..
+        } else {
+          string art_name = string(artDirp->d_name);
+          istringstream iss(art_name);
+          int art_nbr;
+          iss >> art_nbr;
+          string art_title;
+          iss >> art_title;
+          string art_path = path + "/" + to_string(art_nbr) + " " + art_title;
+          remove(art_path.c_str());
+        }
+      }
+        closedir(adp);
+      // ---------------
+
+      remove(path.c_str());
+      return static_cast<int>(Protocol::ANS_ACK);
     }
   }
+  cout << "deleteNewsGroup done" << endl;
   closedir(dp);
-  return static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS);
+  return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
 }
 
 std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
@@ -139,24 +170,23 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
           } else {
             string art_name = string(artDirp->d_name);
             istringstream iss(art_name);
-            string art_nbr_string;
             int art_nbr;
-            iss >> art_nbr_string;
+            iss >> art_nbr;
             string art_title;
             iss >> art_title;
-            cout << "using stoi on art: " << art_nbr_string << endl;
-            art_nbr = stoi(art_nbr_string);
-            cout << "stoi on art worked" << endl;
             Article art(art_title, 0, "", "");
             cout << "art_nbr: " << art_nbr << " and art_title: " << art_title << endl;
             articles[art_nbr] = art;
           }
         }
+        closedir(adp);
+        cout << "articles size: " << articles.size() << endl;
         return make_pair(static_cast<int>(Protocol::ANS_ACK), articles);
       }
       // --------------------------------------------------
     }
   }
+  closedir(dp);
   return make_pair(static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST), articles);
 }
 
@@ -188,7 +218,7 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
         DIR *adp;
         struct dirent *artDirp;
         string art_path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
-        if((adp = opendir(path.c_str())) == NULL) {
+        if((adp = opendir(art_path.c_str())) == NULL) {
 
         }
         while ((artDirp = readdir(adp)) != NULL) {
@@ -214,11 +244,10 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
         outfile << author << endl;
         outfile << text << endl;
         return static_cast<int>(Protocol::ANS_ACK);
-      } else {
-        return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
       }
     }
   }
+  return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
 }
 
 int dbondisk::deleteArticle(int newsGroupId, int articleId) {
@@ -242,7 +271,6 @@ int dbondisk::deleteArticle(int newsGroupId, int articleId) {
       iss >> newsgroup_title;
       dir_nbr = stoi(dir_nbr_string);
       if (dir_nbr == newsGroupId) {
-        // FIND MAX ARTICLE NBR FROM NEWSGROUP DIRECTORY
         DIR *adp;
         struct dirent *artDirp;
         string path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
@@ -269,12 +297,10 @@ int dbondisk::deleteArticle(int newsGroupId, int articleId) {
           }
         }
         return static_cast<int>(Protocol::ERR_ART_DOES_NOT_EXIST);
-      } else {
-        return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
       }
-      // --------------------------------------------------
     }
   }
+  return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
 }
 
 std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupId, int articleId) {
@@ -340,10 +366,9 @@ std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupI
           }
         }
         return make_pair(static_cast<int>(Protocol::ERR_ART_DOES_NOT_EXIST), articleItems);
-      } else {
-        return make_pair(static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST), articleItems);
       }
       // --------------------------------------------------
     }
   }
+  return make_pair(static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST), articleItems);
 }
