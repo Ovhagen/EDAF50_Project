@@ -55,10 +55,8 @@ vector<std::pair<int, Newsgroup>> dbondisk::listNewsGroups() const {
     } else {
       string dir_name = string(dirp->d_name);
       istringstream iss(dir_name);
-      string dir_nbr_string;
       int dir_nbr;
-      iss >> dir_nbr_string;
-      dir_nbr = stoi(dir_nbr_string);
+      iss >> dir_nbr;
       string newsgroup_title;
       iss >> newsgroup_title;
       string remaining;
@@ -68,14 +66,46 @@ vector<std::pair<int, Newsgroup>> dbondisk::listNewsGroups() const {
       newsgroups.push_back(make_pair(dir_nbr, ng));
     }
   }
+
+  sort(newsgroups.begin(), newsgroups.end(), [](pair<int, Newsgroup> pair1, pair<int, Newsgroup> pair2) {
+    return pair1.first < pair2.first;
+  });
   cout << "step4" << endl;
   return newsgroups;
 }
 
 int dbondisk::createNewsGroup(const std::string& title) {
-  string path = "dbroot/" + to_string(newsGroupCounter) + " " + title;
+  DIR *dp;
+  struct dirent *dirp;
+  string path = "dbroot/";
+  if((dp = opendir(path.c_str())) == NULL) {
+
+  }
+  while ((dirp = readdir(dp)) != NULL) {
+    if ( !strcmp(dirp->d_name, ".") || !strcmp(dirp->d_name, "..")) {
+      // skip . and ..
+    } else {
+      string dir_name = string(dirp->d_name);
+      istringstream iss(dir_name);
+      int dir_nbr;
+      iss >> dir_nbr;
+
+      string newsgroup_title;
+      iss >> newsgroup_title;
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+
+      if (title == full_name) {
+        return static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS);
+      }
+    }
+  }
+
+  string ng_path = "dbroot/" + to_string(newsGroupCounter) + " " + title;
   ++newsGroupCounter;
-  return (mkdir(path.c_str(), ACCESSPERMS) == 0) ? static_cast<int>(Protocol::ANS_ACK) : static_cast<int>(Protocol::ERR_NG_ALREADY_EXISTS);
+  mkdir(ng_path.c_str(), ACCESSPERMS);
+  return static_cast<int>(Protocol::ANS_ACK);
 }
 
 int dbondisk::deleteNewsGroup(int newsGroupId) {
@@ -147,20 +177,21 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
     } else {
       string dir_name = string(dirp->d_name);
       istringstream iss(dir_name);
-      string dir_nbr_string;
       int dir_nbr;
-      iss >> dir_nbr_string;
+      iss >> dir_nbr;
+
       string newsgroup_title;
       iss >> newsgroup_title;
-      cout << "using stoi on dir: " << dir_nbr_string << endl;
-      dir_nbr = stoi(dir_nbr_string);
-      cout << "stoi on dir worked" << endl;
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+
       cout << dir_nbr << " == " << newsGroupId << endl;
       if (dir_nbr == newsGroupId) {
         // FIND MAX ARTICLE NBR FROM NEWSGROUP DIRECTORY
         DIR *adp;
         struct dirent *artDirp;
-        string path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
+        string path = "dbroot/" + to_string(dir_nbr) + " " + full_name + "/";
         if((adp = opendir(path.c_str())) == NULL) {
 
         }
@@ -172,14 +203,22 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
             istringstream iss(art_name);
             int art_nbr;
             iss >> art_nbr;
+
             string art_title;
             iss >> art_title;
-            Article art(art_title, 0, "", "");
-            cout << "art_nbr: " << art_nbr << " and art_title: " << art_title << endl;
+            string remaining;
+            getline(iss, remaining);
+            string full_art_name = art_title + remaining;
+
+            Article art(full_art_name, 0, "", "");
+            cout << "art_nbr: " << art_nbr << " and art_title: " << full_art_name << endl;
             articles[art_nbr] = art;
           }
         }
         closedir(adp);
+      /*  sort(articles.begin(), articles.end(), [](pair<int, Newsgroup> pair1, pair<int, Newsgroup> pair2) {
+          return pair1.first < pair2.first;
+        }); */
         cout << "articles size: " << articles.size() << endl;
         return make_pair(static_cast<int>(Protocol::ANS_ACK), articles);
       }
@@ -204,12 +243,15 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
     } else {
       string dir_name = string(dirp->d_name);
       istringstream iss(dir_name);
-      string dir_nbr_string;
       int dir_nbr;
-      iss >> dir_nbr_string;
-      dir_nbr = stoi(dir_nbr_string);
+      iss >> dir_nbr;
+
       string newsgroup_title;
       iss >> newsgroup_title;
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+
       int max_id;
       cout << dir_nbr << " == " << newsGroupId << endl;
       if (dir_nbr == newsGroupId) {
@@ -217,7 +259,7 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
         max_id = 0;
         DIR *adp;
         struct dirent *artDirp;
-        string art_path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
+        string art_path = "dbroot/" + to_string(dir_nbr) + " " + full_name + "/";
         if((adp = opendir(art_path.c_str())) == NULL) {
 
         }
@@ -227,10 +269,8 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
           } else {
             string art_name = string(artDirp->d_name);
             istringstream iss(art_name);
-            string art_nbr_string;
             int art_nbr;
-            iss >> art_nbr_string;
-            art_nbr = stoi(art_nbr_string);
+            iss >> art_nbr;
             if (art_nbr > max_id) {
               max_id = art_nbr;
             }
@@ -240,7 +280,7 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
         // --------------------------------------------------
         cout << "CREATE ARTICLE" << endl;
         cout << "Path: " << art_path << dir_nbr << " " << newsgroup_title << endl;
-        ofstream outfile(art_path + to_string(max_id) + " " + title + ".txt");
+        ofstream outfile(art_path + to_string(max_id) + " " + title);
         outfile << author << endl;
         outfile << text << endl;
         return static_cast<int>(Protocol::ANS_ACK);
@@ -264,16 +304,19 @@ int dbondisk::deleteArticle(int newsGroupId, int articleId) {
     } else {
       string dir_name = string(dirp->d_name);
       istringstream iss(dir_name);
-      string dir_nbr_string;
       int dir_nbr;
-      iss >> dir_nbr_string;
+      iss >> dir_nbr;
+
       string newsgroup_title;
       iss >> newsgroup_title;
-      dir_nbr = stoi(dir_nbr_string);
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+
       if (dir_nbr == newsGroupId) {
         DIR *adp;
         struct dirent *artDirp;
-        string path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
+        string path = "dbroot/" + to_string(dir_nbr) + " " + full_name + "/";
         if((adp = opendir(path.c_str())) == NULL) {
 
         }
@@ -283,14 +326,17 @@ int dbondisk::deleteArticle(int newsGroupId, int articleId) {
           } else {
             string art_name = string(artDirp->d_name);
             istringstream iss(art_name);
-            string art_nbr_string;
             int art_nbr;
-            iss >> art_nbr_string;
+            iss >> art_nbr;
+
             string art_title;
             iss >> art_title;
-            art_nbr = stoi(art_nbr_string);
+            string remaining;
+            getline(iss, remaining);
+            string full_art_name = art_title + remaining;
+
             if (art_nbr == articleId) {
-              string art_path = path + to_string(articleId) + " " + art_title;
+              string art_path = path + to_string(articleId) + " " + full_art_name;
               remove(art_path.c_str());
               return static_cast<int>(Protocol::ANS_ACK);
             }
@@ -317,17 +363,20 @@ std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupI
     } else {
       string dir_name = string(dirp->d_name);
       istringstream iss(dir_name);
-      string dir_nbr_string;
       int dir_nbr;
-      iss >> dir_nbr_string;
+      iss >> dir_nbr;
+
       string newsgroup_title;
       iss >> newsgroup_title;
-      dir_nbr = stoi(dir_nbr_string);
+      string remaining;
+      getline(iss, remaining);
+      string full_name = newsgroup_title + remaining;
+
       if (dir_nbr == newsGroupId) {
         // FIND MAX ARTICLE NBR FROM NEWSGROUP DIRECTORY
         DIR *adp;
         struct dirent *artDirp;
-        string path = "dbroot/" + to_string(dir_nbr) + " " + newsgroup_title + "/";
+        string path = "dbroot/" + to_string(dir_nbr) + " " + full_name + "/";
         if((adp = opendir(path.c_str())) == NULL) {
 
         }
@@ -337,29 +386,38 @@ std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupI
           } else {
             string art_name = string(artDirp->d_name);
             istringstream iss(art_name);
-            string art_nbr_string;
             int art_nbr;
-            iss >> art_nbr_string;
+            iss >> art_nbr;
+
             string art_title;
             iss >> art_title;
-            art_nbr = stoi(art_nbr_string);
+
+            string remaining;
+            getline(iss, remaining);
+            string full_art_name = art_title + remaining;
+
             cout << artDirp->d_name << endl;
             cout << art_nbr << " == " << articleId << endl;
             if (art_nbr == articleId) {
               cout << "art_title: " << art_title << endl;
-              articleItems.push_back(art_title);
+              articleItems.push_back(full_art_name);
               ifstream infile;
-              string art_path = path + to_string(art_nbr) + " " + art_title;
+              string art_path = path + to_string(art_nbr) + " " + full_art_name;
               cout << "art_path: " << art_path << endl;
               infile.open(art_path);
               string art_author;
-              infile >> art_author;
+              getline(infile, art_author);
               cout << "art_author: " << art_author << endl;
               articleItems.push_back(art_author);
               string art_text;
-              getline(infile, art_text, '\0');
-              cout << "art_text: " << art_text << endl;
-              articleItems.push_back(art_text);
+              string temp;
+              while (getline(infile, temp)) {
+                art_text += temp;
+                art_text += '\n';
+              }
+              string new_art_text = art_text.substr(0, art_text.size() - 1);
+              cout << "art_text: " << new_art_text << endl;
+              articleItems.push_back(new_art_text);
               infile.close();
               return make_pair(static_cast<int>(Protocol::ANS_ACK), articleItems);
             }

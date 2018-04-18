@@ -4,6 +4,7 @@
 #include "connectionclosedexception.h"
 #include "protocol.h"
 #include "messagehandler.h"
+#include "dbinterface.h"
 #include "dbinmemory.h"
 #include "dbondisk.h"
 #include "newsgroup.h"
@@ -38,8 +39,8 @@ void writeString(const shared_ptr<Connection>& conn, const string& s) {
 }
 
 int main(int argc, char* argv[]){
-	if (argc != 2) {
-		cerr << "Usage: myserver port-number" << endl;
+	if (argc != 3) {
+		cerr << "Usage: myserver port-number db-type" << endl;
 		exit(1);
 	}
 
@@ -51,13 +52,29 @@ int main(int argc, char* argv[]){
 		exit(1);
 	}
 
+	int dbtype = -1;
+	try {
+		dbtype = stoi(argv[2]);
+	} catch (exception& e) {
+		cerr << "Wrong db type (1 for in memory, 2 for on disk). " << e.what() << endl;
+		exit(1);
+	}
+
 	Server server(port);
 	if (!server.isReady()) {
 		cerr << "Server initialization error." << endl;
 		exit(1);
 	}
 
-   dbondisk db;
+		dbinterface* db;
+	if (dbtype == 1) {
+		db = dbinmemory db();
+	} else if (dbtype == 2) {
+		db = dbondisk db();
+	} else {
+		cerr << "Wrong db type (1 for in memory, 2 for on disk). " << e.what() << endl;
+		exit(1);
+	}
 
 	while (true) {
 		auto conn = server.waitForActivity();
