@@ -50,7 +50,7 @@ CommandHandler::createNewsGroup(std::string groupName){
       cout << "Request failed. A group with the name \'" << groupName << "\' already exists." << endl;
     }
   }else{
-    throw std::bad_exception();
+    throw std::logic_error("CommandHandler::createNewsGroup");
   }
 
   int endCode = mh.recvCode();
@@ -76,7 +76,7 @@ CommandHandler::deleteNewsGroup(int id){
       cout << "Request failed. A group with id \'" << id << "\' does not exist." << endl;
     }
   }else{
-    throw std::bad_exception();
+    throw std::logic_error("CommandHandler::deleteNewsGroup");
   }
 
   int endCode = mh.recvCode();
@@ -112,7 +112,7 @@ CommandHandler::listNewsArticles(int id){
   }
 
   else{
-    throw std::bad_exception();
+    throw std::logic_error("CommandHandler::listNewsArticles");
   }
 
   int endCode = mh.recvCode();
@@ -143,7 +143,7 @@ CommandHandler::createArticle(int id, string title, string author, string text){
       cout << "Request failed. A group with id \'" << id << "\' does not exist." << endl;
     }
   }else{
-    throw std::bad_exception();
+    throw std::logic_error("CommandHandler::createArticle");
   }
 
   int endCode = mh.recvCode();
@@ -172,7 +172,7 @@ CommandHandler::deleteArticle(int id, int artId){
       cout << "Request failed. An article with id \'" << artId << "\' does not exist in the group with id \'" << id << "\'." << endl;
     }
   }else{
-    throw std::bad_exception();
+    throw std::logic_error("CommandHandler::deleteArticle");
   }
 
   int endCode = mh.recvCode();
@@ -200,13 +200,16 @@ CommandHandler::getArticle(int id, int artId){
     int errorCode = mh.recvCode();
     if(errorCode == static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST)){
       cout << "Request failed. A group with id \'" << id << "\' does not exist." << endl;
+      mh.recvCode(); //flush out last byte code
       return vector<string>();
     }else if(errorCode == static_cast<int>(Protocol::ERR_ART_DOES_NOT_EXIST)){
       cout << "Request failed. An article with id \'" << artId << "\' does not exist in the group with id \'" << id << "\'." << endl;
+      mh.recvCode(); //flush out last byte code
       return vector<string>();
     }
   }else{
-    throw std::bad_exception();
+    cout << "error" << endl;
+    throw std::logic_error("CommandHandler::getArticle");
   }
 
   int endCode = mh.recvCode();
@@ -221,6 +224,6 @@ CommandHandler::checkAnswerCode(int code, int answerCode){
 		return true;
 	}
 	else{
-		throw std::bad_exception();
+		throw std::logic_error("CommandHandler::checkAnswerCode");
 	}
 }

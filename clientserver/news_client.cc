@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <sstream>
 #include <utility>
+#include <math.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -59,20 +61,37 @@ void displayArticle(vector<string> article){
 		string title = article[0];
 		string author = article[1];
 		string text = article[2];
-		cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-		string titleSpaces((58-title.size())/2, ' ');
-		cout << "+" << titleSpaces << title << titleSpaces << " +" << endl;
+		cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+		if(title.size()%2 != 0){
+			/*Even out spaces*/
+			title += " ";
+		}
+		string titleSpaces((56-title.size())/2, ' ');
+		cout << "+ " << titleSpaces << title << titleSpaces << "  +" << endl;
+		if(author.size()%2 != 0){
+			/*Even out spaces*/
+			author += " ";
+		}
 		string authorSpaces((47-author.size())/2, ' ');
 		cout << "+" << authorSpaces << "written by "  << author << authorSpaces << "  +" << endl;
 		cout << "+                                                           +" << endl;
-		//cout << text.size()%50 << endl;
-		for(int i = 0; i < text.size()%50; i++){
-			string subText = text.substr(i, i+(50-i));
-			string textSpaces((59-subText.size())/2, ' ');
+		for(int i = 0; i < text.size(); i+=50){
+			string subText;
+			if((i+50) > text.size()){
+				subText = text.substr(i, text.size()%50);
+			}else{
+				subText = text.substr(i, 50);
+			}
+
+			if(subText.size()%2 != 0){
+				/*Even out spaces*/
+				subText += " ";
+			}
+			string textSpaces((58-subText.size())/2, ' ');
 			cout << "+" << textSpaces << subText << textSpaces << " +" << endl;
 		}
 		cout << "+                                                           +" << endl;
-		cout <<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
+		cout <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
 	}
 }
 
@@ -208,10 +227,6 @@ int main(int argc, char* argv[]) {
 					cout << "Unrecognized command, please try again." << endl;
 				}
 			}
-			catch(const std::bad_exception& ba){
-				cerr << "Protocol failure in " << ba.what()<< ". Incorrect sequence received." << endl;
-			}
-
 			catch(const std::invalid_argument& ia){
 				string message = ia.what();
 				if(message == "stoi"){
@@ -220,6 +235,10 @@ int main(int argc, char* argv[]) {
 				else{
 					cerr << ia.what() << endl;
 				}
+			}
+
+			catch(const std::logic_error& lr){
+				cerr << "Protocol failure in " << lr.what()<< ". Incorrect sequence received." << endl;
 			}
 
 			catch (ConnectionClosedException&) {
