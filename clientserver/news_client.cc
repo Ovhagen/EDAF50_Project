@@ -21,11 +21,11 @@ using namespace std;
 /*Prints available commands*/
 void printCommands() {
 	cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-	cout << "The client program generally takes commands on the format <command> <option> <parameter1> <parameter2>... \nwhere either some or all parameters are required." << endl;
+	cout << "The client program generally takes commands on the format <command> <option>\n<parameter1> <parameter2>... where either some or all parameters are required." << endl;
   cout << "Add double quotes \"Text goes here\" to input several words as one argument to a command." << endl;
 	cout << "The available options are \'-ng\' for Newsgroups and \'-art\' for article." << endl;
 	cout << endl;
-	cout << "Below are the available commands for the client application." << endl;
+	cout << "Below are the available commands for the client application:" << endl;
 	cout << "-List of newsgroups: list -ng" << endl;
 	cout << "-Create a newsgroup: create -ng \"<newsgroup name>\"" << endl;
 	cout << "-Delete a newsgroup: delete -ng <group identification number>" << endl;
@@ -118,7 +118,7 @@ vector<string> readCommandParameters(istringstream& ss, int nbrOfParam){
 	}
 
 	if(parameters.size() != nbrOfParam){
-		throw std::invalid_argument("Invalid number of parameters given. Please try again.");
+		throw std::invalid_argument("Invalid number of parameters given. Type \'help\' for list of commands.");
 	}
 	return parameters;
 }
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	cout << "Type a command. Use command \'help\' for listing of commands." << endl;
+	cout << "Type a command. Use command \'help\' for listing of commands.\nUse double quotes as \"argument\" for multiple word capture of argument." << endl;
 	cout << "->";
 	string line;
 	MessageHandler mh(conn);
@@ -175,7 +175,8 @@ int main(int argc, char* argv[]) {
 						 printList(articleList);
 					}
 					else{
-						cout << "Recognized command but no option was specified." << endl;
+						cout << "Recognized command \'list\' but no option was specified." << endl;
+						cout << "The format should be \'list -ng\' or \'list -art [Group ID]\' " << endl;
 					}
 				}
 
@@ -193,7 +194,8 @@ int main(int argc, char* argv[]) {
 														 parameters[2], parameters[3]);
 					}
 					else{
-						cout << "Recognized command but no option was specified." << endl;
+						cout << "Recognized command \'create\' but no option was specified." << endl;
+						cout << "The format should be \'create -ng \"[Group name]\" \' or\n\'create -art \"[Title]\" \"[Author]\" \"[Text]\" \' " << endl;
 					}
 				}
 
@@ -209,6 +211,10 @@ int main(int argc, char* argv[]) {
 						parameters = readCommandParameters(ss, 2);
 						ch.deleteArticle(stoi(parameters[0]), stoi(parameters[1]));
 					}
+					else{
+						cout << "Recognized command \'delete\' but no option was specified." << endl;
+						cout << "The format should be \'delete -ng [Group ID]\' or\n\'delete -art [Group ID] [Article ID] \' " << endl;
+					}
 				}
 
 				else if(command == "get"){
@@ -219,7 +225,8 @@ int main(int argc, char* argv[]) {
 						displayArticle(article);
 					}
 					else{
-							cout << "Recognized command but no option was specified." << endl;
+							cout << "Recognized command \'get\' but no option was specified." << endl;
+							cout << "The format should be \'delete -art [Group ID] [Article ID]\'" << endl;
 					}
 				}
 
