@@ -226,7 +226,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 							cout << "Recognized command \'get\' but no option was specified." << endl;
-							cout << "The format should be \'delete -art [Group ID] [Article ID]\'" << endl;
+							cout << "The format should be \'get -art [Group ID] [Article ID]\'" << endl;
 					}
 				}
 

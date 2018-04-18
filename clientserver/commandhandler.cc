@@ -69,7 +69,7 @@ CommandHandler::deleteNewsGroup(int id){
 
   int response = mh.recvCode();
   if(response == static_cast<int>(Protocol::ANS_ACK)){
-    cout << "Successfully created the group with id \'" << id << "\'."<< endl;
+    cout << "Successfully deleted the group with id \'" << id << "\'."<< endl;
   } else if(response == static_cast<int>(Protocol::ANS_NAK)){
     int errorCode = mh.recvCode();
     if(errorCode == static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST)){
