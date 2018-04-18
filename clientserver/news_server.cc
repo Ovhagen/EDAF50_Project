@@ -68,11 +68,13 @@ int main(int argc, char* argv[]){
 
 		dbinterface* db;
 	if (dbtype == 1) {
-		db = dbinmemory db();
+		dbinmemory inmem;
+		db = &inmem;
 	} else if (dbtype == 2) {
-		db = dbondisk db();
+		dbondisk ondisk;
+		db = &ondisk;
 	} else {
-		cerr << "Wrong db type (1 for in memory, 2 for on disk). " << e.what() << endl;
+		cerr << "Wrong db type (1 for in memory, 2 for on disk). " << endl;
 		exit(1);
 	}
 
@@ -94,7 +96,7 @@ int main(int argc, char* argv[]){
 							throw ConnectionClosedException();
 						}
 						cout << "received com_end" << endl;
-						vector<pair<int, Newsgroup>> newsgroups = db.listNewsGroups();
+						vector<pair<int, Newsgroup>> newsgroups = db->listNewsGroups();
 						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_NG));
 						mh.sendIntParameter(static_cast<int>(newsgroups.size()));
 						cout << "amount of newsgroups: " << newsgroups.size() << endl;
@@ -117,7 +119,7 @@ int main(int argc, char* argv[]){
 								throw ConnectionClosedException();
 							}
 							cout << "received com_end" << endl;
-							unsigned int code = db.createNewsGroup(groupname);
+							unsigned int code = db->createNewsGroup(groupname);
 							cout << code << endl;
 							mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_NG));
 							if (code == static_cast<int>(Protocol::ANS_ACK)) {
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]){
 							if (com_end != static_cast<int>(Protocol::COM_END)) {
 								throw ConnectionClosedException();
 							}
-							int code = db.deleteNewsGroup(id);
+							int code = db->deleteNewsGroup(id);
 							mh.sendByte(static_cast<int>(Protocol::ANS_DELETE_NG));
 							if (code == static_cast<int>(Protocol::ANS_ACK)) {
 								mh.sendByte(code);
@@ -158,7 +160,7 @@ int main(int argc, char* argv[]){
 							throw ConnectionClosedException();
 						}
 						cout << "list art 2" << endl;
-						pair<int, map<int, Article>> articles = db.listArticles(group_id);
+						pair<int, map<int, Article>> articles = db->listArticles(group_id);
 						cout << "list art 3" << endl;
 						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_ART));
 						if (articles.first == static_cast<int>(Protocol::ANS_ACK)) {
@@ -187,7 +189,7 @@ int main(int argc, char* argv[]){
 							if (com_end != static_cast<int>(Protocol::COM_END)) {
 								throw ConnectionClosedException();
 							}
-							int code = db.createArticle(group_id, article_title, article_author, article_text);
+							int code = db->createArticle(group_id, article_title, article_author, article_text);
 							mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_ART));
 							if (code == static_cast<int>(Protocol::ANS_ACK)) {
 								cout << "success" << endl;
@@ -207,7 +209,7 @@ int main(int argc, char* argv[]){
 						if (com_end != static_cast<int>(Protocol::COM_END)) {
 							throw ConnectionClosedException();
 						}
-						int code = db.deleteArticle(group_id, article_id);
+						int code = db->deleteArticle(group_id, article_id);
 						mh.sendByte(static_cast<int>(Protocol::ANS_DELETE_ART));
 						if (code == static_cast<int>(Protocol::ANS_ACK)) {
 							cout << "success" << endl;
@@ -227,7 +229,7 @@ int main(int argc, char* argv[]){
 						if (com_end != static_cast<int>(Protocol::COM_END)) {
 							throw ConnectionClosedException();
 						}
-						pair<int, vector<string>> article = db.getNewsArticle(group_id, article_id);
+						pair<int, vector<string>> article = db->getNewsArticle(group_id, article_id);
 						mh.sendByte(static_cast<int>(Protocol::ANS_GET_ART));
 						if (article.first == static_cast<int>(Protocol::ANS_ACK)) {
 							cout << "success" << endl;
