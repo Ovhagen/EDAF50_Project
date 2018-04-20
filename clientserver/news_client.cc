@@ -43,12 +43,22 @@ void printList(vector<pair<int, string>> list){
 
 	}else{
 		cout << "+++++++++++++++++++++++++++++++++++++++++++++"<< endl;
-		cout << "+ ID   Name                                 +" << endl;
+		cout << "+ ID    Name                                +" << endl;
 		cout << "+                                           +" << endl;
 		for(const auto& p : list){
-			string spaces(38 - to_string(p.first).length() - p.second.length(), ' ');
-			string tableBoundry = spaces + "+";
-			cout << "+ " << p.first << "    " << p.second << tableBoundry << endl;
+			int nameLength = p.second.length();
+			int restLength = nameLength - 34;
+			if(nameLength > 34){
+				string subName1 = p.second.substr(0, 34);
+				string subName2 = p.second.substr(34, restLength);
+				string spaces1(38 - to_string(p.first).length() - subName1.length(), ' ');
+				string spaces2(70 - nameLength, ' ');
+				cout << "+ " << p.first << "    " << subName1 << spaces1 << "+" << endl;
+				cout << "+       " << subName2 << spaces2 << "+" << endl;
+			}else{
+				string spaces(38 - to_string(p.first).length() - p.second.length(), ' ');
+				cout << "+ " << p.first << "    " << p.second << spaces << "+" << endl;
+			}
 		}
 		cout << "+++++++++++++++++++++++++++++++++++++++++++++"<< endl;
 	}
@@ -176,7 +186,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 						cout << "Recognized command \'list\' but no option was specified." << endl;
-						cout << "The format should be \'list -ng\' or \'list -art [Group ID]\' " << endl;
+						cout << "The format should be list -ng or list -art [Group ID] " << endl;
 					}
 				}
 
@@ -195,7 +205,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 						cout << "Recognized command \'create\' but no option was specified." << endl;
-						cout << "The format should be \'create -ng \"[Group name]\" \' or\n\'create -art \"[Title]\" \"[Author]\" \"[Text]\" \' " << endl;
+						cout << "The format should be create -ng \"[Group name]\"  or create -art \"[Title]\" \"[Author]\" \"[Text]\" " << endl;
 					}
 				}
 
@@ -213,7 +223,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 						cout << "Recognized command \'delete\' but no option was specified." << endl;
-						cout << "The format should be \'delete -ng [Group ID]\' or\n\'delete -art [Group ID] [Article ID] \' " << endl;
+						cout << "The format should be delete -ng [Group ID] or delete -art [Group ID] [Article ID]" << endl;
 					}
 				}
 
@@ -226,7 +236,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 							cout << "Recognized command \'get\' but no option was specified." << endl;
-							cout << "The format should be \'get -art [Group ID] [Article ID]\'" << endl;
+							cout << "The format should be get -art [Group ID] [Article ID]" << endl;
 					}
 				}
 
@@ -245,6 +255,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			catch(const std::logic_error& lr){
+
 				cerr << "Protocol failure in " << lr.what()<< ". Incorrect sequence received." << endl;
 			}
 
