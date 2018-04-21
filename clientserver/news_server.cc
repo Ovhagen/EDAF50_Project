@@ -66,13 +66,16 @@ int main(int argc, char* argv[]){
 		exit(1);
 	}
 
+	cout << "Sever started."<< endl;
 		dbinterface* db;
 	if (dbtype == 1) {
 		dbinmemory inmem;
 		db = &inmem;
+		cout << "In memory version active."<< endl;
 	} else if (dbtype == 2) {
 		dbondisk ondisk;
 		db = &ondisk;
+		cout << "On disk version active."<< endl;
 	} else {
 		cerr << "Wrong db type (1 for in memory, 2 for on disk). " << endl;
 		exit(1);
