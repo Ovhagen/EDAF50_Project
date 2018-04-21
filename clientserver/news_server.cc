@@ -106,13 +106,11 @@ int main(int argc, char* argv[]){
 					}
 					case static_cast<int>(Protocol::COM_CREATE_NG): {
 							string groupname = mh.recvStringParameter();
-							cout << groupname << endl;
 							unsigned char com_end = mh.recvByte();
 							if (com_end != static_cast<int>(Protocol::COM_END)) {
 								throw ConnectionClosedException();
 							}
 							unsigned int code = db->createNewsGroup(groupname);
-							cout << code << endl;
 							mh.sendByte(static_cast<int>(Protocol::ANS_CREATE_NG));
 							if (code == static_cast<int>(Protocol::ANS_ACK)) {
 								mh.sendByte(code);
@@ -151,7 +149,6 @@ int main(int argc, char* argv[]){
 						mh.sendByte(static_cast<int>(Protocol::ANS_LIST_ART));
 						if (articles.first == static_cast<int>(Protocol::ANS_ACK)) {
 							mh.sendByte(static_cast<int>(Protocol::ANS_ACK));
-							cout << articles.second.size() << endl;
 							mh.sendIntParameter(articles.second.size());
 							for (auto it = articles.second.begin(); it != articles.second.end(); ++it) {
 								mh.sendIntParameter(it->first);

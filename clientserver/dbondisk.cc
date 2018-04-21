@@ -70,7 +70,6 @@ vector<std::pair<int, Newsgroup>> dbondisk::listNewsGroups() const {
   sort(newsgroups.begin(), newsgroups.end(), [](pair<int, Newsgroup> pair1, pair<int, Newsgroup> pair2) {
     return pair1.first < pair2.first;
   });
-  cout << "step4" << endl;
   return newsgroups;
 }
 
@@ -111,22 +110,17 @@ int dbondisk::deleteNewsGroup(int newsGroupId) {
   DIR *dp;
   struct dirent *dirp;
 
-  cout << "entered deleteNewsGroup" << endl;
   if((dp = opendir("dbroot")) == NULL) {
     cout << "Error("   << errno << ") opening " << dp << endl;
-    return errno;
   }
   while ((dirp = readdir(dp)) != NULL) {
-    cout << "going through directory" << endl;
     string dir_name = string(dirp->d_name);
     istringstream iss(dir_name);
     //string dir_nbr_string;
     int dir_nbr;
     iss >> dir_nbr;
     //dir_nbr = stoi(dir_nbr_string);
-    cout << dir_nbr << " == " << newsGroupId << endl;
     if (dir_nbr == newsGroupId) {
-      cout << "dir_nbr equal to newsGroupId" << endl;
       string path = "dbroot/" + dir_name;
       // delete all articles first
       DIR *adp;
@@ -156,7 +150,6 @@ int dbondisk::deleteNewsGroup(int newsGroupId) {
       return static_cast<int>(Protocol::ANS_ACK);
     }
   }
-  cout << "deleteNewsGroup done" << endl;
   closedir(dp);
   return static_cast<int>(Protocol::ERR_NG_DOES_NOT_EXIST);
 }
@@ -185,7 +178,6 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
       getline(iss, remaining);
       string full_name = newsgroup_title + remaining;
 
-      cout << dir_nbr << " == " << newsGroupId << endl;
       if (dir_nbr == newsGroupId) {
         // FIND MAX ARTICLE NBR FROM NEWSGROUP DIRECTORY
         DIR *adp;
@@ -210,7 +202,6 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
             string full_art_name = art_title + remaining;
 
             Article art(full_art_name, 0, "", "");
-            cout << "art_nbr: " << art_nbr << " and art_title: " << full_art_name << endl;
             articles[art_nbr] = art;
           }
         }
@@ -218,7 +209,6 @@ std::pair<int, std::map<int, Article>> dbondisk::listArticles(int newsGroupId) {
       /*  sort(articles.begin(), articles.end(), [](pair<int, Newsgroup> pair1, pair<int, Newsgroup> pair2) {
           return pair1.first < pair2.first;
         }); */
-        cout << "articles size: " << articles.size() << endl;
         return make_pair(static_cast<int>(Protocol::ANS_ACK), articles);
       }
       // --------------------------------------------------
@@ -252,7 +242,6 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
       string full_name = newsgroup_title + remaining;
 
       int max_id;
-      cout << dir_nbr << " == " << newsGroupId << endl;
       if (dir_nbr == newsGroupId) {
         // FIND MAX ARTICLE NBR FROM NEWSGROUP DIRECTORY
         max_id = 0;
@@ -277,8 +266,6 @@ int dbondisk::createArticle(int newsGroupId, std::string title, std::string auth
         }
         max_id++;
         // --------------------------------------------------
-        cout << "CREATE ARTICLE" << endl;
-        cout << "Path: " << art_path << dir_nbr << " " << newsgroup_title << endl;
         ofstream outfile(art_path + to_string(max_id) + " " + title);
         outfile << author << endl;
         outfile << text << endl;
@@ -395,18 +382,13 @@ std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupI
             getline(iss, remaining);
             string full_art_name = art_title + remaining;
 
-            cout << artDirp->d_name << endl;
-            cout << art_nbr << " == " << articleId << endl;
             if (art_nbr == articleId) {
-              cout << "art_title: " << art_title << endl;
               articleItems.push_back(full_art_name);
               ifstream infile;
               string art_path = path + to_string(art_nbr) + " " + full_art_name;
-              cout << "art_path: " << art_path << endl;
               infile.open(art_path);
               string art_author;
               getline(infile, art_author);
-              cout << "art_author: " << art_author << endl;
               articleItems.push_back(art_author);
               string art_text;
               string temp;
@@ -415,7 +397,6 @@ std::pair<int, std::vector<std::string>> dbondisk::getNewsArticle(int newsGroupI
                 art_text += '\n';
               }
               string new_art_text = art_text.substr(0, art_text.size() - 1);
-              cout << "art_text: " << new_art_text << endl;
               articleItems.push_back(new_art_text);
               infile.close();
               return make_pair(static_cast<int>(Protocol::ANS_ACK), articleItems);

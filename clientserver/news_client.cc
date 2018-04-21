@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 					}
 					else{
 						cout << "Recognized command \'create\' but no option was specified." << endl;
-						cout << "The format should be create -ng \"[Group name]\"  or create -art \"[Title]\" \"[Author]\" \"[Text]\" " << endl;
+						cout << "The format should be create -ng \"[Group name]\"  or create -art [Group ID] \"[Title]\" \"[Author]\" \"[Text]\" " << endl;
 					}
 				}
 
