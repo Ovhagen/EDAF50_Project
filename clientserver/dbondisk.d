@@ -1,5 +1,5 @@
 dbondisk.o: dbondisk.cc dbondisk.h dbinterface.h article.h protocol.h \
- newsgroup.h dbinmemory.h
+  newsgroup.h dbinmemory.h
 
 dbondisk.h:
 

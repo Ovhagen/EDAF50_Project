@@ -17,7 +17,7 @@ using namespace std;
 dbondisk::dbondisk() {
   mkdir("dbroot", ACCESSPERMS);
 
-  int max_id = 0;
+  int max_id = -1;
   DIR *dp;
   struct dirent *dirp;
   string path = "dbroot/";
@@ -101,9 +101,8 @@ int dbondisk::createNewsGroup(const std::string& title) {
       }
     }
   }
-
-  string ng_path = "dbroot/" + to_string(newsGroupCounter) + " " + title;
   ++newsGroupCounter;
+  string ng_path = "dbroot/" + to_string(newsGroupCounter) + " " + title;
   mkdir(ng_path.c_str(), ACCESSPERMS);
   return static_cast<int>(Protocol::ANS_ACK);
 }
