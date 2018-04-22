@@ -114,6 +114,9 @@ int dbondisk::deleteNewsGroup(int newsGroupId) {
     cout << "Error("   << errno << ") opening " << dp << endl;
   }
   while ((dirp = readdir(dp)) != NULL) {
+    if ( !strcmp(dirp->d_name, ".") || !strcmp(dirp->d_name, "..")) {
+      // skip . and ..
+    } else {
     string dir_name = string(dirp->d_name);
     istringstream iss(dir_name);
     //string dir_nbr_string;
@@ -148,6 +151,7 @@ int dbondisk::deleteNewsGroup(int newsGroupId) {
 
       remove(path.c_str());
       return static_cast<int>(Protocol::ANS_ACK);
+    }
     }
   }
   closedir(dp);
